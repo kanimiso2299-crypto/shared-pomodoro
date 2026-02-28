@@ -57,8 +57,8 @@ io.on('connection', (socket) => {
   socket.emit('usersUpdate', Array.from(users.values()));
 
   // ユーザーが参加した時の処理
-  socket.on('join', ({ name, task }) => {
-    users.set(socket.id, { id: socket.id, name, task });
+  socket.on('join', ({ name, task, goal }) => {
+    users.set(socket.id, { id: socket.id, name, task, goal });
     io.emit('usersUpdate', Array.from(users.values()));
   });
 
@@ -67,6 +67,16 @@ io.on('connection', (socket) => {
     const user = users.get(socket.id);
     if (user) {
       user.task = task;
+      users.set(socket.id, user);
+      io.emit('usersUpdate', Array.from(users.values()));
+    }
+  });
+
+  // 目標の更新
+  socket.on('updateGoal', (goal) => {
+    const user = users.get(socket.id);
+    if (user) {
+      user.goal = goal;
       users.set(socket.id, user);
       io.emit('usersUpdate', Array.from(users.values()));
     }

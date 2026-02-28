@@ -13,6 +13,7 @@ function App() {
   const [joined, setJoined] = useState(false)
   const [name, setName] = useState('')
   const [task, setTask] = useState('')
+  const [goal, setGoal] = useState('')
   const [timerState, setTimerState] = useState({ mode: 'work', timeRemaining: 25 * 60, isRunning: false })
   const [users, setUsers] = useState([])
 
@@ -37,17 +38,37 @@ function App() {
     }
   }, [])
 
+  // 再接続時の処理（タブを長時間開いていると切断されるため）
+  useEffect(() => {
+    const onConnect = () => {
+      if (joined && name) {
+        socket.emit('join', { name, task, goal })
+      }
+    }
+
+    socket.on('connect', onConnect)
+
+    return () => {
+      socket.off('connect', onConnect)
+    }
+  }, [joined, name, task, goal])
+
   const handleJoin = (e) => {
     e.preventDefault()
     if (!name.trim() || !task.trim()) return
 
-    socket.emit('join', { name, task })
+    socket.emit('join', { name, task, goal })
     setJoined(true)
   }
 
   const handleTaskUpdate = (newTask) => {
     setTask(newTask)
     socket.emit('updateTask', newTask)
+  }
+
+  const handleGoalUpdate = (newGoal) => {
+    setGoal(newGoal)
+    socket.emit('updateGoal', newGoal)
   }
 
   const toggleTimer = () => {
@@ -98,6 +119,15 @@ function App() {
                 required
               />
             </div>
+            <div className="form-group">
+              <label>今周期の目標 (任意)</label>
+              <input
+                type="text"
+                placeholder="今周期の目標を書き込んでください"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+              />
+            </div>
             <button type="submit" className="join-btn">参加する</button>
           </form>
         </div>
@@ -132,7 +162,9 @@ function App() {
           <UserList
             users={users}
             currentTask={task}
+            currentGoal={goal}
             onTaskUpdate={handleTaskUpdate}
+            onGoalUpdate={handleGoalUpdate}
           />
         </div>
       </main>

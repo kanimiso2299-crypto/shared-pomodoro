@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Users, CheckCircle2, CircleDashed } from 'lucide-react';
+import { Users, CheckCircle2, CircleDashed, Target } from 'lucide-react';
 import './UserList.css';
 
-const UserList = ({ users, currentTask, onTaskUpdate }) => {
+const UserList = ({ users, currentTask, currentGoal, onTaskUpdate, onGoalUpdate }) => {
     const [editing, setEditing] = useState(false);
     const [tempTask, setTempTask] = useState(currentTask || '');
+    const [editingGoal, setEditingGoal] = useState(false);
+    const [tempGoal, setTempGoal] = useState(currentGoal || '');
 
     const handleUpdate = (e) => {
         e.preventDefault();
@@ -12,6 +14,12 @@ const UserList = ({ users, currentTask, onTaskUpdate }) => {
             onTaskUpdate(tempTask);
             setEditing(false);
         }
+    };
+
+    const handleGoalUpdateSubmit = (e) => {
+        e.preventDefault();
+        onGoalUpdate(tempGoal);
+        setEditingGoal(false);
     };
 
     return (
@@ -24,7 +32,7 @@ const UserList = ({ users, currentTask, onTaskUpdate }) => {
             </div>
 
             <div className="my-task-section">
-                <h4 className="my-task-title">自分のタスク</h4>
+                <h4 className="my-task-title">自分のタスク / 目標</h4>
                 {editing ? (
                     <form className="task-form" onSubmit={handleUpdate}>
                         <input
@@ -42,6 +50,24 @@ const UserList = ({ users, currentTask, onTaskUpdate }) => {
                         <span className="edit-hint">編集</span>
                     </div>
                 )}
+                {editingGoal ? (
+                    <form className="task-form" style={{ marginTop: '8px' }} onSubmit={handleGoalUpdateSubmit}>
+                        <input
+                            type="text"
+                            className="task-input"
+                            value={tempGoal}
+                            onChange={(e) => setTempGoal(e.target.value)}
+                            placeholder="今周期の目標"
+                            autoFocus
+                        />
+                        <button type="submit" className="save-btn">保存</button>
+                    </form>
+                ) : (
+                    <div className="current-task-display" onClick={() => setEditingGoal(true)} title="クリックして編集" style={{ marginTop: '8px' }}>
+                        <span className="task-text">{currentGoal || '目標が設定されていません'}</span>
+                        <span className="edit-hint">編集</span>
+                    </div>
+                )}
             </div>
 
             <div className="members-list">
@@ -56,6 +82,12 @@ const UserList = ({ users, currentTask, onTaskUpdate }) => {
                                 <CircleDashed size={14} className="task-icon" />
                                 {user.task || 'タスクなし'}
                             </div>
+                            {user.goal && (
+                                <div className="member-goal" style={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)', marginTop: '4px' }}>
+                                    <Target size={14} className="task-icon" style={{ marginRight: '6px' }} />
+                                    {user.goal}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
